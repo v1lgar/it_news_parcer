@@ -7,31 +7,28 @@ on:
     branches: [ main, master ]
 
 jobs:
-  test:
-    runs-on: ubuntu-24.04
+  ci:
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
           cache: 'pip'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
       - name: Run tests with coverage
         run: |
           export PYTHONPATH=$PYTHONPATH:.
           coverage run -m pytest
           coverage report -m --fail-under=70
 
-  build:
-    needs: test
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
       - name: Build Docker image
         run: docker build -t news-parser:${{ github.sha }} .
