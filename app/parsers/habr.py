@@ -17,7 +17,8 @@ class HabrParser(BaseParser):
         
         count = 0
         for url in urls:
-            if count >= limit: break
+            if count >= limit:
+                break
             
             html = await self.get_html(url)
             if not html:
@@ -27,19 +28,40 @@ class HabrParser(BaseParser):
             items = soup.find_all("article")
             
             for item in items:
-                if count >= limit: break
+                if count >= limit:
+                    break
                 try:
                     title_elem = item.find("h2", class_="tm-title")
-                    if not title_elem: continue
+                    if not title_elem:
+                        continue
                     title = title_elem.get_text(strip=True)
-                    article_url = self.base_url + title_elem.find("a")["href"]
+                    a_tag = title_elem.find("a")
+                    if not a_tag:
+                        continue
+                    href = a_tag.get("href")
+                    if not isinstance(href, str):
+                        continue
+                    article_url = self.base_url + href
                     
                     author_elem = item.find("a", class_="tm-user-info__username")
                     author_name = author_elem.get_text(strip=True) if author_elem else "Unknown"
-                    author_url = self.base_url + author_elem["href"] if author_elem else None
+                    author_url = None
+                    if author_elem:
+                        auth_href = author_elem.get("href")
+                        if isinstance(auth_href, str):
+                            author_url = self.base_url + auth_href
                     
                     date_elem = item.find("time")
-                    published_at = datetime.fromisoformat(date_elem["datetime"].replace("Z", "+00:00")).replace(tzinfo=None) if date_elem else datetime.now(timezone.utc).replace(tzinfo=None)
+                    date_str = ""
+                    if date_elem:
+                        date_attr = date_elem.get("datetime")
+                        if isinstance(date_attr, str):
+                            date_str = date_attr
+
+                    if date_str:
+                        published_at = datetime.fromisoformat(date_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                    else:
+                        published_at = datetime.now(timezone.utc).replace(tzinfo=None)
                     
                     hubs = [a.get_text(strip=True).replace("*", "").strip() for a in item.find_all("a", class_="tm-article-snippet__hubs-item-link")]
                     

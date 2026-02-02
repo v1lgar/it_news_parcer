@@ -16,7 +16,8 @@ class VCParser(BaseParser):
         
         count = 0
         for url in urls:
-            if count >= limit: break
+            if count >= limit:
+                break
             
             html = await self.get_html(url)
             if not html:
@@ -26,26 +27,57 @@ class VCParser(BaseParser):
             items = soup.find_all("div", class_="feed__item") or soup.find_all("div", class_="content")
             
             for item in items:
-                if count >= limit: break
+                if count >= limit:
+                    break
                 try:
                     title_link = item.find("a", class_="content-link") or item.find("div", class_="content-title")
-                    if not title_link: 
+                    if not title_link:
                         title_link = item.find("a")
-                    if not title_link: continue
+                    if not title_link:
+                        continue
                     
                     title = title_link.get_text(strip=True)
-                    article_url = title_link["href"] if title_link.name == "a" else (title_link.find("a")["href"] if title_link.find("a") else "")
+
+                    raw_url = ""
+                    if title_link.name == "a":
+                        href = title_link.get("href")
+                        if isinstance(href, str):
+                            raw_url = href
+                    else:
+                        a_in_title = title_link.find("a")
+                        if a_in_title:
+                            href = a_in_title.get("href")
+                            if isinstance(href, str):
+                                raw_url = href
+
+                    if not raw_url:
+                        continue
+
+                    article_url = raw_url
                     if not article_url.startswith("http"):
                         article_url = self.base_url + article_url
                     
                     author_elem = item.find("a", class_="content-header-author__name")
                     author_name = author_elem.get_text(strip=True) if author_elem else "Unknown"
-                    author_url = author_elem["href"] if author_elem else None
-                    if author_url and not author_url.startswith("http"):
-                        author_url = self.base_url + author_url
+                    author_url = None
+                    if author_elem:
+                        auth_href = author_elem.get("href")
+                        if isinstance(auth_href, str):
+                            author_url = auth_href
+                            if not author_url.startswith("http"):
+                                author_url = self.base_url + author_url
 
                     time_elem = item.find("time")
-                    published_at = datetime.fromisoformat(time_elem["datetime"].replace("Z", "+00:00")).replace(tzinfo=None) if time_elem and time_elem.get("datetime") else datetime.now(timezone.utc).replace(tzinfo=None)
+                    date_str = ""
+                    if time_elem:
+                        date_attr = time_elem.get("datetime")
+                        if isinstance(date_attr, str):
+                            date_str = date_attr
+
+                    if date_str:
+                        published_at = datetime.fromisoformat(date_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                    else:
+                        published_at = datetime.now(timezone.utc).replace(tzinfo=None)
                     
                     article_tags = []
                     subsite = item.find("a", class_="content-header-subsite__name")
@@ -57,14 +89,16 @@ class VCParser(BaseParser):
                     if votes:
                         try:
                             likes = int(votes.get_text(strip=True).replace("+", "").replace("−", "-"))
-                        except: pass
+                        except Exception:
+                            pass
                     
                     comments = 0
                     comm_elem = item.find("span", class_="content-footer__comments-count")
                     if comm_elem:
                         try:
                             comments = int(comm_elem.get_text(strip=True))
-                        except: pass
+                        except Exception:
+                            pass
 
                     summary_elem = item.find("div", class_="content-body") or item.find("p")
                     summary = clean_text(str(summary_elem)) if summary_elem else ""

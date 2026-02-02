@@ -17,7 +17,8 @@ class IXBTParser(BaseParser):
         
         count = 0
         for url in urls:
-            if count >= limit: break
+            if count >= limit:
+                break
             
             html = await self.get_html(url)
             if not html:
@@ -27,31 +28,65 @@ class IXBTParser(BaseParser):
             items = soup.find_all("div", class_="post-list-item") or soup.find_all("article")
             
             for item in items:
-                if count >= limit: break
+                if count >= limit:
+                    break
                 try:
                     title_elem = item.find("h3") or item.find("h2") or item.find("a", class_="post-title")
-                    if not title_elem: continue
+                    if not title_elem:
+                        continue
                     
-                    title_link = title_elem if title_elem.name == "a" else title_elem.find("a")
-                    if not title_link: continue
+                    title_link = None
+                    if title_elem.name == "a":
+                        title_link = title_elem
+                    else:
+                        title_link = title_elem.find("a")
+                    if not title_link:
+                        continue
                     
                     title = title_link.get_text(strip=True)
-                    article_url = title_link["href"]
+
+                    raw_url = ""
+                    href = title_link.get("href")
+                    if isinstance(href, str):
+                        raw_url = href
+
+                    if not raw_url:
+                        continue
+
+                    article_url = raw_url
                     if not article_url.startswith("http"):
-                        article_url = "https://www.ixbt.com" + article_url if article_url.startswith("/") else self.base_url + "/" + article_url
+                        if article_url.startswith("/"):
+                            article_url = "https://www.ixbt.com" + article_url
+                        else:
+                            article_url = self.base_url + "/" + article_url
                     
                     author_elem = item.find("a", class_="author-name") or item.find("span", class_="author")
                     author_name = author_elem.get_text(strip=True) if author_elem else "Unknown"
-                    author_url = author_elem["href"] if author_elem and author_elem.name == "a" else None
+                    author_url = None
+                    if author_elem and author_elem.name == "a":
+                        auth_href = author_elem.get("href")
+                        if isinstance(auth_href, str):
+                            author_url = auth_href
+
                     if author_url and not author_url.startswith("http"):
-                        author_url = "https://www.ixbt.com" + author_url if author_url.startswith("/") else self.base_url + "/" + author_url
+                        if author_url.startswith("/"):
+                            author_url = "https://www.ixbt.com" + author_url
+                        else:
+                            author_url = self.base_url + "/" + author_url
 
                     published_at = datetime.now(timezone.utc).replace(tzinfo=None)
                     time_elem = item.find("time")
-                    if time_elem and time_elem.get("datetime"):
+                    date_str = ""
+                    if time_elem:
+                        date_attr = time_elem.get("datetime")
+                        if isinstance(date_attr, str):
+                            date_str = date_attr
+
+                    if date_str:
                         try:
-                            published_at = datetime.fromisoformat(time_elem["datetime"].replace("Z", "+00:00")).replace(tzinfo=None)
-                        except: pass
+                            published_at = datetime.fromisoformat(date_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                        except Exception:
+                            pass
                     
                     article_tags = []
                     cat_elem = item.find("a", class_="category") or item.find("span", class_="category")
@@ -63,14 +98,16 @@ class IXBTParser(BaseParser):
                     if votes:
                         try:
                             likes = int(re.sub(r'[^\d\-]', '', votes.get_text(strip=True)))
-                        except: pass
+                        except Exception:
+                            pass
                     
                     comments = 0
                     comm_elem = item.find("span", class_="comments-count")
                     if comm_elem:
                         try:
                             comments = int(re.sub(r'[^\d]', '', comm_elem.get_text(strip=True)))
-                        except: pass
+                        except Exception:
+                            pass
 
                     summary_elem = item.find("div", class_="post-content") or item.find("p")
                     summary = clean_text(str(summary_elem)) if summary_elem else ""

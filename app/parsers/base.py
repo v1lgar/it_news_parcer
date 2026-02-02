@@ -25,7 +25,8 @@ class BaseParser(ABC):
         # This is an abstract async generator.
         # We need a dummy yield to make it an AsyncGenerator if it were not abstract.
         # But for @abstractmethod, we just need the type hint.
-        if False: yield {}
+        if False:
+            yield {}
 
     async def get_html(self, url: str) -> str:
         """Fetch HTML content of a URL with throttling."""
