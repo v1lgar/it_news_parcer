@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, AsyncGenerator
+from typing import List, Dict, Any, AsyncGenerator, Optional
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 from app.parsers.base import BaseParser
@@ -8,7 +8,7 @@ class VCParser(BaseParser):
     def __init__(self, throttle_seconds: float = 1.0):
         super().__init__("VC.ru", "https://vc.ru", throttle_seconds)
 
-    async def fetch_articles(self, limit: int = 20, tags: List[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
+    async def fetch_articles(self, limit: int = 20, tags: Optional[List[str]] = None) -> AsyncGenerator[Dict[str, Any], None]:
         urls = [f"{self.base_url}/"]
         if tags:
             for tag in tags:

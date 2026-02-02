@@ -2,7 +2,7 @@ import asyncio
 import httpx
 import structlog
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, AsyncGenerator
+from typing import List, Dict, Any, AsyncGenerator, Optional
 
 logger = structlog.get_logger()
 
@@ -18,7 +18,7 @@ class BaseParser(ABC):
         )
 
     @abstractmethod
-    async def fetch_articles(self, limit: int = 20, tags: List[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
+    async def fetch_articles(self, limit: int = 20, tags: Optional[List[str]] = None) -> AsyncGenerator[Dict[str, Any], None]:
         """Fetch articles from the source, optionally filtered by tags.
         Yields article dictionaries.
         """
