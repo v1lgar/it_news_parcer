@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.coverage
+.env
+db_data/
+postgres_data/
+*.log
+env/
+.env
+venv/
