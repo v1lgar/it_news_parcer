@@ -2,8 +2,7 @@ import asyncio
 import httpx
 import structlog
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
-from app.parsers.utils import detect_language, clean_text
+from typing import List
 
 logger = structlog.get_logger()
 

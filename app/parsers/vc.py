@@ -1,4 +1,3 @@
-import asyncio
 from typing import List, Dict, Any, AsyncGenerator
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone

@@ -13,6 +13,8 @@ structlog
 python-dotenv
 pytest
 pytest-asyncio
+respx
+aiosqlite
 coverage
 pandas
 plotly

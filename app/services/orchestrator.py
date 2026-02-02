@@ -1,8 +1,7 @@
 import structlog
 from typing import List, Dict, Any
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models import Article, Author, Tag, Source, article_tags
+from app.db.models import Article, Author, Tag, Source
 from app.parsers.habr import HabrParser
 from app.parsers.vc import VCParser
 from app.parsers.ixbt import IXBTParser

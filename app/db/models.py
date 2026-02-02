@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from typing import List, Optional
-from sqlalchemy import String, DateTime, ForeignKey, Table, Column, Integer, Text, Float
+from sqlalchemy import String, DateTime, ForeignKey, Table, Column, Integer, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
