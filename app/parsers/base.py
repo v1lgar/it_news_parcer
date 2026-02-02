@@ -2,7 +2,7 @@ import asyncio
 import httpx
 import structlog
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict, Any, AsyncGenerator
 
 logger = structlog.get_logger()
 
@@ -18,11 +18,14 @@ class BaseParser(ABC):
         )
 
     @abstractmethod
-    async def fetch_articles(self, limit: int = 20, tags: List[str] = None):
+    async def fetch_articles(self, limit: int = 20, tags: List[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
         """Fetch articles from the source, optionally filtered by tags.
         Yields article dictionaries.
         """
-        pass
+        # This is an abstract async generator.
+        # We need a dummy yield to make it an AsyncGenerator if it were not abstract.
+        # But for @abstractmethod, we just need the type hint.
+        if False: yield {}
 
     async def get_html(self, url: str) -> str:
         """Fetch HTML content of a URL with throttling."""
